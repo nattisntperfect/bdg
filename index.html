@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Untuk Dede ❤️</title>
+<style>
+    body {
+        margin: 0;
+        font-family: 'Comic Sans MS', cursive, sans-serif;
+        background: #0b0c10;
+        color: white;
+        overflow-x: hidden;
+    }
+    canvas#stars {
+        position: fixed;
+        top: 0;
+        left: 0;
+        z-index: -1;
+    }
+    header {
+        text-align: center;
+        padding: 20px;
+        color: #ff4d88;
+        font-size: 2.5em;
+        animation: heartbeat 1.5s infinite;
+    }
+    @keyframes heartbeat {
+        0%, 100% { transform: scale(1); }
+        50% { transform: scale(1.1); }
+    }
+    .btn {
+        display: inline-block;
+        background: #ff99cc;
+        color: white;
+        padding: 10px 20px;
+        border-radius: 25px;
+        cursor: pointer;
+        margin: 10px;
+        transition: background 0.3s;
+    }
+    .btn:hover {
+        background: #ff66a3;
+    }
+    .message-box {
+        text-align: center;
+        font-size: 1.2em;
+        color: #fff;
+        margin: 20px;
+        min-height: 40px;
+    }
+    .gallery {
+        display: flex;
+        overflow-x: auto;
+        padding: 10px;
+    }
+    .gallery img {
+        max-height: 200px;
+        margin: 0 10px;
+        border-radius: 15px;
+        box-shadow: 0 4px 10px rgba(0,0,0,0.4);
+        transition: transform 0.3s;
+    }
+    .gallery img:hover {
+        transform: scale(1.05);
+    }
+    .game-area {
+        text-align: center;
+        margin: 30px;
+    }
+    .heart {
+        position: absolute;
+        font-size: 20px;
+        color: red;
+        animation: floatUp 3s forwards;
+        pointer-events: auto;
+    }
+    @keyframes floatUp {
+        0% { opacity: 1; transform: translateY(0); }
+        100% { opacity: 0; transform: translateY(-100px); }
+    }
+    footer {
+        text-align: center;
+        padding: 20px;
+        font-size: 0.9em;
+        color: #ddd;
+    }
+    #map {
+        height: 300px;
+        width: 100%;
+        margin-top: 20px;
+        border-radius: 10px;
+        overflow: hidden;
+    }
+    /* Amplop Animasi */
+    .envelope {
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%) scale(0);
+        width: 300px;
+        height: 200px;
+        background: #ffcccc;
+        border-radius: 10px;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+        z-index: 10;
+        transition: transform 0.5s ease;
+        overflow: hidden;
+        text-align: center;
+        padding: 20px;
+    }
+    .envelope.show {
+        transform: translate(-50%, -50%) scale(1);
+    }
+    .close-btn {
+        background: #ff4d88;
+        color: white;
+        border: none;
+        padding: 5px 10px;
+        border-radius: 5px;
+        cursor: pointer;
+        margin-top: 10px;
+    }
+</style>
+<!-- Leaflet CSS -->
+<link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+</head>
+<body>
+
+<canvas id="stars"></canvas>
+
+<header>❤️ Sayang Dede ❤️</header>
+
+<div style="text-align:center;">
+    <div class="btn" onclick="showMessage()">Klik untuk Semangat</div>
+    <div class="btn" onclick="openLetter()">Buka Surat</div>
+    <div class="btn" onclick="startGame()">Main Game Hati</div>
+    <div class="btn" onclick="toggleMusic()">🎵 Musik</div>
+</div>
+
+<div class="message-box" id="messageBox"></div>
+
+<h2 style="text-align:center; color:#ff4d88;">📸 Galeri Kenangan 📸</h2>
+<div class="gallery">
+    <img src="https://picsum.photos/id/237/300/200" alt="Foto 1">
+    <img src="https://picsum.photos/id/238/300/200" alt="Foto 2">
+    <img src="https://picsum.photos/id/239/300/200" alt="Foto 3">
+</div>
+
+<h2 style="text-align:center; color:#ff4d88;">📍 Peta Universitas Pendidikan Indonesia 📍</h2>
+<div id="map"></div>
+
+<div class="game-area" id="gameArea" style="display:none;">
+    <p>Klik hati yang muncul untuk dapatkan pesan rahasia ❤️</p>
+</div>
+
+<footer>Selalu hati-hati di Bandung ya Dede. Aku sayang kamu selamanya ❤️</footer>
+
+<audio id="bgMusic" loop>
+    <source src="https://www.bensound.com/bensound-music/bensound-sunny.mp3" type="audio/mpeg">
+</audio>
+
+<!-- Surat Cinta Amplop -->
+<div class="envelope" id="envelope">
+    <h3>💌 Dear Dede 💌</h3>
+    <p>Aku selalu sayang sama kamu.  
+       Jaga kesehatan, hati-hati di sana,  
+       dan semangat kuliahnya di UPI Bandung.  
+       Kita pasti bisa melewati jarak ini. ❤️</p>
+    <button class="close-btn" onclick="closeLetter()">Tutup</button>
+</div>
+
+<!-- Leaflet JS -->
+<script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+
+<script>
+    // ================== Pesan Semangat ==================
+    const messages = [
+        "Semangat kuliahnya Dede! 💪",
+        "Aku selalu mendukungmu dari sini ❤️",
+        "Jangan lupa makan ya! 🍜",
+        "Sehat-sehat terus di Bandung ya 😘",
+        "Aku rindu kamu setiap hari 🥰"
+    ];
+
+    function showMessage() {
+        const box = document.getElementById("messageBox");
+        const msg = messages[Math.floor(Math.random() * messages.length)];
+        box.textContent = "";
+        let i = 0;
+        function typeWriter() {
+            if (i < msg.length) {
+                box.textContent += msg.charAt(i);
+                i++;
+                setTimeout(typeWriter, 50);
+            }
+        }
+        typeWriter();
+    }
+
+    // ================== Surat Amplop ==================
+    function openLetter() {
+        document.getElementById("envelope").classList.add("show");
+    }
+    function closeLetter() {
+        document.getElementById("envelope").classList.remove("show");
+    }
+
+    // ================== Mini Game ==================
+    function startGame() {
+        document.getElementById("gameArea").style.display = "block";
+        for (let i = 0; i < 10; i++) {
+            setTimeout(() => {
+                spawnHeart();
+            }, i * 800);
+        }
+    }
+
+    function spawnHeart() {
+        const heart = document.createElement("div");
+        heart.classList.add("heart");
+        heart.innerHTML = "❤️";
+        heart.style.left = Math.random() * window.innerWidth + "px";
+        heart.style.top = window.innerHeight - 30 + "px";
+        document.body.appendChild(heart);
+        heart.onclick = () => {
+            alert("Pesan rahasia: Aku cinta kamu selamanya ❤️");
+            heart.remove();
+        };
+        setTimeout(() => heart.remove(), 3000);
+    }
+
+    // ================== Musik ==================
+    function toggleMusic() {
+        const music = document.getElementById("bgMusic");
+        if (music.paused) {
+            music.play();
+        } else {
+            music.pause();
+        }
+    }
+
+    // ================== Peta UPI Bandung ==================
+    const map = L.map('map').setView([-6.861, 107.593], 16); // Koordinat UPI
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: 'Map data © OpenStreetMap contributors'
+    }).addTo(map);
+    L.marker([-6.861, 107.593]).addTo(map)
+        .bindPopup("💖 Universitas Pendidikan Indonesia — Tempat Dede Kuliah 💖")
+        .openPopup();
+
+    // ================== Animasi Bintang ==================
+    const canvas = document.getElementById('stars');
+    const ctx = canvas.getContext('2d');
+    let stars = [];
+
+    function resizeCanvas() {
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+    }
+    window.addEventListener('resize', resizeCanvas);
+    resizeCanvas();
+
+    function createStars() {
+        stars = [];
+        for (let i = 0; i < 100; i++) {
+            stars.push({
+                x: Math.random() * canvas.width,
+                y: Math.random() * canvas.height,
+                radius: Math.random() * 2,
+                speed: Math.random() * 0.5 + 0.2
+            });
+        }
+    }
+
+    function drawStars() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        ctx.fillStyle = 'white';
+        stars.forEach(star => {
+            ctx.beginPath();
+            ctx.arc(star.x, star.y, star.radius, 0, Math.PI * 2);
+            ctx.fill();
+            star.y += star.speed;
+            if (star.y > canvas.height) star.y = 0;
+        });
+        requestAnimationFrame(drawStars);
+    }
+
+    createStars();
+    drawStars();
+
+    // ================== Partikel Hati Saat Klik ==================
+    document.addEventListener('click', (e) => {
+        const heart = document.createElement('div');
+        heart.textContent = '💖';
+        heart.style.position = 'absolute';
+        heart.style.left = e.pageX + 'px';
+        heart.style.top = e.pageY + 'px';
+        heart.style.fontSize = '20px';
+        heart.style.pointerEvents = 'none';
+        document.body.appendChild(heart);
+        setTimeout(() => heart.remove(), 1000);
+    });
+</script>
+
+</body>
+</html>
